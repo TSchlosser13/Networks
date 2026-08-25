@@ -1,0 +1,637 @@
+%===============================================================================
+% A Consolidated Overview of
+%  Artificial Neural Networks and
+%  Deep Neural Networks:
+%  Concepts, Architectures, and Training
+%===============================================================================
+% v0.3 - 20.08.2026 (current version): revised and extended text and references
+% v0.2 - 29.05.2026: general text and figure work
+% v0.1 - 01.03.2026: init
+%
+% 2026 Tobias Schlosser
+%
+% This manuscript is licensed under the Creative Commons Attribution 4.0
+%  International (CC BY 4.0) license
+%  https://creativecommons.org/licenses/by/4.0/deed
+%===============================================================================
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Preamble %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% documentclass
+
+\documentclass{article}
+
+\usepackage[left=3cm, right=3cm, top=3cm, bottom=3cm]{geometry}
+
+
+% usepackages
+
+\usepackage{lmodern, mathtools, microtype, textgreek}
+
+\usepackage[main=english, ngerman]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage[hyphens]{url}
+\usepackage[colorlinks, citecolor=LimeGreen, pagebackref=true]{hyperref}
+\usepackage[dvipsnames, table]{xcolor}
+
+\usepackage{cite}
+
+% https://ctan.net/macros/latex/contrib/hyperref/doc/hyperref-doc.pdf
+\renewcommand*{\backref}[1]{}
+\renewcommand*{\backrefalt}[4]{%
+    \ifnum #3 > 0 {%
+        \ifnum #3 = 1 {%
+            \ifnum #1 = 1 {%
+                \\ (1 citation on 1 page: #2)
+            } \else {%
+                \\ (1 citation on #1 pages: #2)
+            } \fi
+        } \else {%
+            \ifnum #1 = 1 {%
+                \\ (#3 citations on 1 page: #2)
+            } \else {%
+                \\ (#3 citations on #1 pages: #2)
+            } \fi
+        } \fi
+    } \fi
+}
+
+\usepackage{tikz}
+\usetikzlibrary{
+    arrows,
+    backgrounds,
+    calc,
+    decorations,
+    calligraphy,
+    fit,
+    positioning,
+    shapes,
+    spy
+}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}
+\usepgfplotslibrary{colorbrewer, fillbetween}
+
+\usepackage[hang]{caption}
+
+\usepackage{array, diagbox, float, longtable, makecell, multicol, multirow, subfig, tabularx, xfrac}
+
+\usepackage[export]{adjustbox}
+
+\usepackage[defaultlines=10, all]{nowidow}
+
+\setlength{\parskip}{   1em }
+\setlength{\parindent}{ 0em }
+
+\addtolength{\skip\footins}{1cm}
+
+\renewcommand*{\arraystretch}{1.33}
+
+\linespread{1.1}\selectfont
+
+\newcolumntype{P}[1]{>{ \centering  \arraybackslash }p{#1}}
+\newcolumntype{Q}[1]{>{ \raggedleft \arraybackslash }p{#1}}
+\newcolumntype{M}[1]{>{ \centering  \arraybackslash }m{#1}}
+\newcolumntype{N}[1]{>{ \raggedleft \arraybackslash }m{#1}}
+\newcolumntype{B}[1]{>{ \centering  \arraybackslash }b{#1}}
+\newcolumntype{C}[1]{>{ \raggedleft \arraybackslash }b{#1}}
+
+
+% ORCID
+
+\usepackage{fontawesome5}
+
+% With / without "\thinspace" before "\textsuperscript{...}"
+% \newcommand{\ORCID}[1]{\thinspace\textsuperscript{\href{https://orcid.org/#1}{\textcolor[HTML]{A6CE39}{\faOrcid}}}}
+\newcommand{\ORCID}[1]{\textsuperscript{\href{https://orcid.org/#1}{\textcolor[HTML]{A6CE39}{\faOrcid}}}}
+
+\newcommand{\ORCIDSchlosser}{0000-0002-0682-4284} % ORCID Tobias Schlosser
+
+
+% Page numbering
+\usepackage{fancyhdr, lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyfoot[C]{\thepage/\pageref{LastPage}}}
+\fancyfoot[C]{\thepage/\pageref{LastPage}}
+
+
+% Miscellaneous
+
+\usepackage[subfigure]{tocloft}
+
+% "How to write a perfect equation parameters description?"
+% https://tex.stackexchange.com/questions/95838/how-to-write-a-perfect-equation-parameters-description
+\newenvironment{conditions}[1][where:]
+    {\hspace{0.02\textwidth} #1 \begin{tabular}[t]{>{$}l<{$} @{${}={}$} l}}
+    {\end{tabular}\\[\belowdisplayskip]}
+
+
+
+
+% longtable ToC
+
+% \usepackage{hyperref}
+\usepackage{longtable}
+
+\newcounter{type}[section]
+\renewcommand{\thetype}{\thesection.\arabic{type}}
+
+\newcounter{entry}[section]
+\renewcommand{\theentry}{\thesection.\arabic{entry}}
+
+% Type row
+% #1 = title
+\newcommand{\TypeRow}[1]{
+    \noalign{
+        \stepcounter{type}
+        \xdef\TYPENUM{\thetype}
+        \phantomsection\label{type:\TYPENUM}
+        \addcontentsline{toc}{subsection}{\TYPENUM\hspace{0.5cm}#1}
+    }
+    \multicolumn{5}{|c|}{\textbf{\TYPENUM\hspace{0.5cm}#1}} \\
+    \hline
+}
+
+% Entry row
+% #1 = key, #2,#4..#7 = columns, #3 = citation
+\newcommand{\EntryRow}[7]{
+    \noalign{
+        \stepcounter{entry}
+        \xdef\ENTRYNUM{\theentry}
+        \phantomsection\label{entry:#1}
+        \addcontentsline{toc}{subsubsection}{\ENTRYNUM\hspace{0.5cm}#2}
+    }
+    #2 #3 & #4 & #5 & #6 & #7 \\
+    \hline
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Preamble %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\begin{document}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{\Huge A Consolidated Overview of \\ Artificial Neural Networks and \\ Deep Neural Networks: \\ Concepts, Architectures, and Training}
+
+\author{
+    Tobias Schlosser\ORCID{\ORCIDSchlosser} \\[1ex]
+    Dresden University of Technology, \\
+    01307 Dresden, Germany, \\
+    \texttt{\{firstname.lastname\}@tu-dresden.de}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\maketitle
+
+
+
+
+\section*{Abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Text %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Artificial neural networks (ANNs) and deep neural networks (DNNs) are foundational methods in modern machine learning and underpin major advances in computer vision, natural language processing, speech processing, and automated decision-making. This manuscript presents a consolidated overview of fundamental concepts, principal architectural families, and established training methods as a compact reference for researchers and practitioners. It synthesizes essential components---including artificial neurons, activation and loss functions, regularization, initialization, and gradient-based learning---and situates them within common modeling and evaluation workflows. The overview is organized into two main parts: (i) classical ANN concepts and architectures, encompassing feed-forward, recurrent, and unsupervised formulations, and (ii) architectures and paradigms characteristic of the DNN era, including convolutional neural networks (CNNs), transformers, generative models, self-supervised learning, and large-scale training systems. Particular emphasis is placed on factors governing optimization stability and generalization, alongside contemporary considerations such as computational efficiency, model compression, robustness, and monitoring. The manuscript is conceived as a living resource that can evolve alongside emerging architectures and established best practices.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Text %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\clearpage
+
+
+
+
+\renewcommand{\contentsname}{Table of Contents}
+
+\tableofcontents
+
+
+
+
+\clearpage
+
+
+
+
+\section{Introduction and Motivation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Text %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Artificial neural networks (ANNs) have progressed from comparatively simple perceptrons and multilayer feed-forward models to deep neural networks (DNNs) comprising billions of parameters and exhibiting broad representational capabilities. This development has been enabled by the convergence of algorithmic advances---including effective backpropagation-based training, improved optimization methods, normalization techniques, and residual connections---with substantial increases in computational capacity and the availability of large-scale datasets. Contemporary ANNs function not only as predictive models but also as general-purpose representation learners and generative systems, facilitating transfer across tasks, domains, and modalities. Consequently, the field now encompasses an extensive and partly fragmented vocabulary of concepts, architectural patterns, and training practices that can be difficult to navigate systematically.
+
+A central challenge in practical neural-network development is that performance depends on numerous interacting choices beyond architecture alone. Data preprocessing, objective functions, regularization, parameter initialization, optimization settings, and evaluation protocols can each exert a decisive influence on experimental outcomes. Modern deep learning also introduces system-level considerations, including distributed training, mixed-precision computation, and memory constraints, while deployment imposes requirements related to latency, robustness, monitoring, and interpretability. This manuscript therefore consolidates essential building blocks and widely adopted architectural families into structured tables and accompanying text to promote consistent terminology and transparent experimental design.
+
+Throughout this manuscript, ANN denotes the broader class of neural models learned from data through parameter optimization, whereas DNN refers to architectures whose depth and representational capacity are typically enabled by contemporary training techniques and large-scale computation. The overview prioritizes concepts and architectural families frequently encountered in current research and practice and provides a coherent foundation for further study rather than an exhaustive historical account.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Text %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{figure}[tbp]
+    \centering
+
+    \begin{tikzpicture}
+        \colorlet{draw_color}{LimeGreen}
+        \colorlet{fill_color}{LimeGreen!50}
+
+        \begin{axis}[
+            ybar, bar width=0.5cm,
+            xtick=data, ymin=0, ymax=260,
+            enlarge x limits=0.1,
+            width=\textwidth, height=0.6\textwidth,
+            symbolic x coords={2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022},
+            xlabel={Year}, ylabel={Number of publications [thousand]},
+            nodes near coords,
+            every node near coord/.append style={font=\footnotesize, /pgf/number format/.cd, fixed zerofill, precision=2}
+        ]
+            % Data: https://drive.google.com/drive/folders/1jcFRe6edMYPwmNIHZiY2JHiNEaj4-xWG, "fig_1.1.1.csv"
+            \addplot[draw=draw_color, fill=fill_color] coordinates {
+                (2010,  87.797) (2011,  87.277) (2012,  89.097) (2013,  92.240) (2014,  97.377)
+                (2015, 104.872) (2016, 108.645) (2017, 120.519) (2018, 143.396) (2019, 177.182)
+                (2020, 201.635) (2021, 239.594) (2022, 242.289)
+            };
+        \end{axis}
+    \end{tikzpicture}
+
+    \caption{Number of artificial intelligence (AI) publications worldwide from 2010 to 2022 \cite[p. 31]{maslej2024aiindex}.}
+    \label{figure:AI_publications}
+\end{figure}
+
+
+\begin{figure}[tbp]
+    \centering
+
+    \begin{tikzpicture}
+        \begin{axis}[
+            xtick=data, ymin=0, ymax=80,
+            enlarge x limits=0.1, enlarge y limits=0.1,
+            width=\textwidth, height=0.6\textwidth,
+            symbolic x coords={2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022},
+            xlabel={Year}, ylabel={Number of publications [thousand]},
+            xtick align=outside,
+            legend pos=north west, legend cell align=left
+        ]
+            % Data: https://drive.google.com/drive/folders/1jcFRe6edMYPwmNIHZiY2JHiNEaj4-xWG, "fig_1.1.3.csv"
+
+
+            \addplot coordinates {(2010,6.229) (2011,6.237) (2012,6.894) (2013,7.614) (2014,8.676) (2015,10.504) (2016,12.78) (2017,17.539) (2018,27.132) (2019,39.165) (2020,50.81) (2021,65.248) (2022,72.229)};
+            \addlegendentry{Machine learning}
+
+            \addplot coordinates {(2010,10.355) (2011,10.948) (2012,11.456) (2013,12.386) (2014,12.634) (2015,13.246) (2016,12.034) (2017,12.178) (2018,13.598) (2019,15.83) (2020,16.59) (2021,19.562) (2022,21.309)};
+            \addlegendentry{Computer vision}
+
+
+            \addplot coordinates {(2010,9.839) (2011,10.068) (2012,10.604) (2013,11.404) (2014,12.274) (2015,12.814) (2016,12.397) (2017,12.791) (2018,13.967) (2019,16.142) (2020,16.646) (2021,19.284) (2022,19.841)};
+            \addlegendentry{Pattern recognition}
+
+            \addplot coordinates {(2010,11.337) (2011,11.556) (2012,11.95) (2013,12.157) (2014,12.165) (2015,12.56) (2016,13.063) (2017,12.848) (2018,14.516) (2019,15.226) (2020,15.045) (2021,12.478) (2022,12.052)};
+            \addlegendentry{Process management}
+
+            \addplot coordinates {(2010,1.099) (2011,1.034) (2012,1.089) (2013,1.172) (2014,1.248) (2015,1.268) (2016,1.702) (2017,2.721) (2018,4.658) (2019,6.816) (2020,7.954) (2021,9.756) (2022,10.386)};
+            \addlegendentry{Computer network}
+
+            \addplot coordinates {(2010,5.172) (2011,5.559) (2012,5.912) (2013,6.397) (2014,6.776) (2015,7.065) (2016,6.897) (2017,6.871) (2018,7.391) (2019,8.154) (2020,8.253) (2021,9.059) (2022,9.171)};
+            \addlegendentry{Control theory}
+
+            \addplot coordinates {(2010,6.341) (2011,6.072) (2012,6.237) (2013,6.381) (2014,6.579) (2015,6.6) (2016,6.051) (2017,6.183) (2018,6.702) (2019,7.222) (2020,7.258) (2021,8.214) (2022,8.309)};
+            \addlegendentry{Algorithm}
+
+            \addplot coordinates {(2010,3.771) (2011,3.815) (2012,4.237) (2013,4.233) (2014,4.857) (2015,4.782) (2016,4.854) (2017,4.504) (2018,5.002) (2019,5.396) (2020,6.399) (2021,6.807) (2022,7.176)};
+            \addlegendentry{Linguistics}
+
+            \addplot coordinates {(2010,2.742) (2011,2.797) (2012,2.929) (2013,3.237) (2014,3.455) (2015,3.914) (2016,3.85) (2017,4.071) (2018,4.622) (2019,5.504) (2020,6.093) (2021,6.777) (2022,6.832)};
+            \addlegendentry{Mathematical optimization}
+        \end{axis}
+    \end{tikzpicture}
+
+    \caption{Number of AI publications worldwide from 2010 to 2022 by field of study \cite[p. 33]{maslej2024aiindex}.}
+    \label{figure:AI_publications_by_field}
+\end{figure}
+
+
+
+
+\clearpage
+
+
+
+
+\section{Artificial Neural Networks}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Text %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Artificial neural networks can be formulated as parameterized function approximators composed of elementary computational units, or neurons, organized into layered or recurrent structures. At their core, ANNs combine linear transformations with nonlinear activation functions and learn their parameters by minimizing an objective function through gradient-based optimization. Even in comparatively shallow networks, these choices critically determine representational capacity, optimization dynamics, and generalization. Classical ANN methodology therefore centers on selecting task-appropriate objectives, stabilizing optimization through suitable initialization and learning-rate control, and limiting overfitting through regularization and validation-guided model selection.
+
+Many architectural principles associated with contemporary deep learning originated in earlier ANN research. Recurrent neural networks (RNNs) introduced temporal parameter sharing and enabled explicit modeling of sequential dependencies, while also exposing optimization difficulties such as vanishing and exploding gradients. Autoencoders (AEs) and related unsupervised formulations established representation learning as an important objective and subsequently became foundational to self-supervised learning and foundation-model pretraining. Likewise, normalization, gradient clipping, and skip connections address deficiencies in signal propagation and numerical conditioning, thereby supporting reliable optimization as network depth increases. ANN workflows employ established classification and regression metrics, supplemented by calibration and interpretability methods when reliable probabilistic predictions or model explanations are required.
+
+For concision, the accompanying table uses the following abbreviations:
+
+\begin{multicols}{2}
+    \begin{itemize}\setlength{\itemsep}{0cm}
+        \item AE = autoencoder
+        \item ANN = artificial neural network
+        \item DNN = deep neural network
+        \item F1 = harmonic mean of precision and recall
+        \item GRU = gated recurrent unit
+        \item LIME = local interpretable model-agnostic explanations
+        \item LSTM = long short-term memory
+        \item LVQ = learning vector quantization
+        \item MLP = multilayer perceptron
+        \item MSE = mean squared error
+        \item N/A = not applicable
+        \item PR = precision--recall
+        \item RBF = radial basis function
+        \item ReLU = rectified linear unit
+        \item RMSProp = root mean square propagation
+        \item ROC = receiver operating characteristic
+        \item RNN = recurrent neural network
+        \item Seq2Seq = sequence-to-sequence
+        \item SGD = stochastic gradient descent
+        \item SOM = self-organizing map
+        \item VAE = variational autoencoder
+    \end{itemize}
+\end{multicols}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Text %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\clearpage
+
+
+
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.35\textwidth}|}
+    \caption{Artificial neural network concepts, components, and classical architectures.} \\
+
+
+    \hline
+    \textbf{Entry} & \textbf{Area} & \textbf{Modality} & \textbf{Scale} & \textbf{Typical tasks / notes} \\
+    \hline
+    \endfirsthead
+
+    \hline
+    \textbf{Entry} & \textbf{Area} & \textbf{Modality} & \textbf{Scale} & \textbf{Typical tasks / notes} \\
+    \hline
+    \endhead
+
+    \multicolumn{5}{r}{\textit{continued on next page}} \\
+    \endfoot
+
+    \endlastfoot
+
+
+    \TypeRow{Neural building blocks and primitives}
+    \EntryRow{activation_functions}{Activation functions}{\cite{apicella2021survey}}{Foundations}{N/A}{Core set}{Sigmoid, tanh, and ReLU families; influence gradient flow and expressivity}
+    \EntryRow{loss_functions}{Loss functions}{\cite{wang2022comprehensive}}{Training}{N/A}{Core set}{MSE, cross-entropy, and hinge losses; shape objectives and calibration}
+    \EntryRow{neuron_perceptron}{Perceptron / artificial neuron}{\cite{rosenblatt1958perceptron}}{Foundations}{N/A}{Core unit}{Weighted sum followed by a nonlinearity; binary and linear classification baseline}
+    \EntryRow{regularization_l2_dropout}{Regularization (\texorpdfstring{$\ell_2$}{L2}, dropout)}{\cite{moradi2020survey}}{Training}{N/A}{Core set}{Controls overfitting; dropout as stochastic ensembling}
+    \EntryRow{initialization}{Weight initialization}{\cite{narkhede2022review}}{Training}{N/A}{Core set}{Xavier/Glorot, He; stabilizes forward/backward signal scales}
+
+    \TypeRow{Learning algorithms and optimization}
+    \EntryRow{adagrad}{AdaGrad}{\cite{duchi2011adaptive}}{Optimization}{N/A}{Algorithm}{Adaptive per-parameter learning rates; effective for sparse gradients}
+    \EntryRow{adam}{Adam and adaptive methods}{\cite{kingma2015adam}}{Optimization}{N/A}{Algorithm}{Adaptive learning rates; widely used default in practice}
+    \EntryRow{backprop}{Backpropagation}{\cite{rumelhart1986learning}}{Training}{N/A}{Algorithm}{Chain rule gradient computation; basis for most ANN and DNN training}
+    \EntryRow{lr_schedules}{Learning-rate schedules}{\cite{konar2020comparison}}{Optimization}{N/A}{Technique}{Step/cosine/warmup; crucial for stability and final performance}
+    \EntryRow{momentum_nesterov}{Momentum and Nesterov acceleration}{\cite{nesterov1983method}}{Optimization}{N/A}{Algorithm}{Accelerates convergence; dampens oscillations}
+    \EntryRow{rmsprop}{RMSProp}{\cite{tieleman2012lecture}}{Optimization}{N/A}{Algorithm}{Adaptive step sizes based on moving averages of squared gradients}
+    \EntryRow{second_order}{Second-order methods}{\cite{liu1989limited}}{Optimization}{N/A}{Algorithm}{Newton and quasi-Newton methods; limited by computational and memory demands at scale}
+    \EntryRow{sgd}{Stochastic gradient descent (SGD)}{\cite{robbins1951stochastic}}{Optimization}{N/A}{Algorithm}{Baseline optimizer; often paired with momentum}
+
+    \TypeRow{Generalization and model selection}
+    \EntryRow{bias_variance}{Bias--variance trade-off}{\cite{geman1992neural}}{Theory}{N/A}{Concept}{Explains under/overfitting; guides capacity control}
+    \EntryRow{cross_validation}{Cross-validation}{\cite{stone1974cross}}{Evaluation}{N/A}{Protocol}{Model selection for small and medium-sized datasets; robust estimates}
+    \EntryRow{early_stopping}{Early stopping}{\cite{prechelt1998early}}{Training}{N/A}{Technique}{Stops training based on validation; strong regularizer}
+    \EntryRow{calibration}{Probability calibration}{\cite{brier1950verification}}{Evaluation}{N/A}{Technique}{Reliability diagrams and temperature scaling; important for decision-making}
+
+    \TypeRow{Classic feed-forward networks}
+    \EntryRow{elm}{Extreme learning machine (ELM)}{\cite{huang2006extreme}}{Architecture}{Tabular}{Small--Medium}{Randomized hidden parameters with analytically fitted output weights}
+    \EntryRow{hopfield}{Hopfield network}{\cite{hopfield1982neural}}{Architecture}{N/A}{Small}{Associative memory; energy-based formulation}
+    \EntryRow{mlp}{Multilayer perceptron (MLP)}{\cite{rosenblatt1962principles}}{Architecture}{Tabular/Text}{Small--Large}{Dense layers; baseline for tabular and learned embeddings}
+    \EntryRow{rbf}{Radial basis function network (RBF)}{\cite{broomhead1988radial}}{Architecture}{Tabular}{Small}{Kernel-like hidden units; classic function approximation}
+
+    \TypeRow{Recurrent and sequence models (ANN era)}
+    \EntryRow{gru}{Gated recurrent unit (GRU)}{\cite{cho2014learning}}{Architecture}{Sequence}{Medium--Large}{Simplified gating relative to LSTMs; strong baseline}
+    \EntryRow{lstm}{Long short-term memory (LSTM)}{\cite{hochreiter1997long}}{Architecture}{Sequence}{Medium--Large}{Gated recurrence; long-range dependencies}
+    \EntryRow{rnn}{Recurrent neural network (RNN)}{\cite{mcculloch1943logical}}{Architecture}{Sequence}{Small--Medium}{Sequential modeling; suffers from vanishing gradients}
+    \EntryRow{seq2seq}{Seq2Seq (encoder--decoder)}{\cite{sutskever2014sequence}}{Architecture}{Sequence}{Medium--Large}{Translation, summarization; often with attention}
+
+    \TypeRow{Associative, competitive, and unsupervised ANNs}
+    \EntryRow{autoencoder}{Autoencoder (AE)}{\cite{rumelhart1986parallel}}{Unsupervised}{General}{Small--Large}{Representation learning; denoising and dimensionality reduction}
+    \EntryRow{competitive}{Competitive learning / learning vector quantization (LVQ)}{\cite{kohonen2012self}}{Unsupervised}{Tabular}{Small}{Prototype-based classification; interpretability via prototypes}
+    \EntryRow{denoising_ae}{Denoising autoencoder}{\cite{vincent2008extracting}}{Unsupervised}{General}{Small--Large}{Robust representations learned by reconstructing corrupted inputs}
+    \EntryRow{som}{Self-organizing map (SOM)}{\cite{kohonen1982self}}{Unsupervised}{Tabular}{Small--Medium}{Topology-preserving mapping; clustering/visualization}
+    \EntryRow{sparse_ae}{Sparse autoencoder}{\cite{ng2011sparse}}{Unsupervised}{General}{Small--Medium}{Sparsity-constrained hidden representations for feature learning}
+    \EntryRow{vae}{Variational autoencoder (VAE)}{\cite{kingma2014auto}}{Generative}{General}{Medium--Large}{Probabilistic latent variables; generation and disentanglement}
+
+    \TypeRow{Stability, normalization, and training aids}
+    \EntryRow{batchnorm}{Batch normalization}{\cite{ioffe2015batch}}{Training}{N/A}{Technique}{Stabilizes training; reduces sensitivity to initialization}
+    \EntryRow{gradient_clipping}{Gradient clipping}{\cite{pascanu2013difficulty}}{Training}{N/A}{Technique}{Prevents exploding gradients in RNNs and deep networks}
+    \EntryRow{groupnorm}{Group normalization}{\cite{wu2018group}}{Training}{N/A}{Technique}{Batch-size-independent normalization over channel groups}
+    \EntryRow{layernorm}{Layer normalization}{\cite{ba2016layer}}{Training}{N/A}{Technique}{Common in sequence models; normalization per sample}
+    \EntryRow{residuals_concept}{Skip connections (concept)}{\cite{he2016deep}}{Architecture}{N/A}{Technique}{Enables deeper networks; foundation for residual nets}
+    \EntryRow{weightnorm}{Weight normalization}{\cite{salimans2016weight}}{Training}{N/A}{Technique}{Reparameterization decoupling weight magnitude and direction}
+
+    \TypeRow{Evaluation and interpretability (general)}
+    \EntryRow{confusion_metrics}{Confusion-matrix metrics}{\cite{miller1955analysis}}{Evaluation}{N/A}{Core set}{Accuracy, precision, recall, and F1 score; classification}
+    \EntryRow{lime}{LIME}{\cite{ribeiro2016why}}{Interpretability}{General}{Technique}{Local surrogate explanations for individual predictions}
+    \EntryRow{permutation_importance}{Permutation feature importance}{\cite{breiman2001random}}{Interpretability}{General}{Technique}{Model-agnostic assessment of predictive dependence on features}
+    \EntryRow{roc_pr}{Receiver operating characteristic (ROC) and precision--recall (PR) curves}{\cite{peterson1954theory}}{Evaluation}{N/A}{Technique}{Threshold analysis; PR curves are often preferred for imbalanced data}
+    \EntryRow{sensitivity_analysis}{Basic sensitivity and saliency analysis}{\cite{koch1985shifts}}{Interpretability}{General}{Technique}{Input gradients; early neural explanation tools}
+\end{longtable}
+
+
+
+
+\clearpage
+
+
+
+
+\section{Deep Neural Networks}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Text %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Deep neural networks extend classical ANNs through greater depth, width, and training scale, together with architectural and algorithmic mechanisms that facilitate optimization, representation learning, and transfer. In computer vision, convolutional neural networks (CNNs) exploit spatial locality and translational structure, providing effective inductive biases for image-like data. Residual and densely connected architectures mitigate optimization difficulties by improving gradient propagation and feature reuse, thereby enabling substantially deeper models. In sequence modeling, attention-based transformers have become the predominant architecture because of their highly parallelizable training and favorable scaling characteristics. Across modalities, large-scale pretraining followed by task-specific fine-tuning or prompting has become a prevailing paradigm, shifting emphasis toward the adaptation of broadly transferable representations.
+
+Contemporary DNN development is characterized by a close interdependence among model design, optimization, and systems engineering. Stable large-scale training commonly requires normalization, carefully configured learning-rate schedules, and mixed-precision computation. As model size increases, distributed training becomes indispensable, with data, model or tensor, and pipeline parallelism addressing complementary computational and memory bottlenecks. Deployment constraints simultaneously motivate pruning, quantization, and parameter-efficient adaptation, each introducing trade-offs among predictive performance, latency, memory consumption, and energy demand. Robustness and safety concerns further motivate adversarial training, out-of-distribution (OOD) detection, uncertainty estimation, and drift monitoring. Interpretability remains an important complement to DNN deployment, particularly in high-stakes settings, where attribution methods and monitoring can help identify spurious behavior and support human oversight.
+
+For concision, the accompanying table uses the following abbreviations:
+
+\begin{multicols}{2}
+    \begin{itemize}\setlength{\itemsep}{0cm}
+        \item BERT = bidirectional encoder representations from transformers
+        \item BF16 = bfloat16 (brain floating-point) format
+        \item CNN = convolutional neural network
+        \item DINO = self-distillation with no labels
+        \item FCN = fully convolutional network
+        \item FP16 = 16-bit floating-point format
+        \item GAN = generative adversarial network
+        \item GPT = generative pre-trained transformer
+        \item Grad-CAM = gradient-weighted class activation mapping
+        \item IID = independent and identically distributed
+        \item INT8/INT4 = 8-bit/4-bit integer formats
+        \item LoRA = low-rank adaptation
+        \item MAE = masked autoencoder
+        \item MedImg = medical imaging
+        \item MLM = masked language modeling
+        \item MLOps = machine learning operations
+        \item MLP = multilayer perceptron
+        \item MoCo = momentum contrast
+        \item OOD = out-of-distribution
+        \item ResNet = residual neural network
+        \item SHAP = SHapley Additive exPlanations
+        \item SimCLR = simple framework for contrastive learning of visual representations
+        \item T5 = text-to-text transfer transformer
+        \item V+L = vision--language
+        \item VGG = Visual Geometry Group
+        \item ViT = vision transformer
+    \end{itemize}
+\end{multicols}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Text %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\clearpage
+
+
+
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.35\textwidth}|}
+    \caption{Deep neural network architectures, training paradigms, and system considerations.} \\
+
+
+    \hline
+    \textbf{Entry} & \textbf{Area} & \textbf{Modality} & \textbf{Scale} & \textbf{Typical tasks / notes} \\
+    \hline
+    \endfirsthead
+
+    \hline
+    \textbf{Entry} & \textbf{Area} & \textbf{Modality} & \textbf{Scale} & \textbf{Typical tasks / notes} \\
+    \hline
+    \endhead
+
+    \multicolumn{5}{r}{\textit{continued on next page}} \\
+    \endfoot
+
+    \endlastfoot
+
+
+    \TypeRow{Deep feed-forward and residual families}
+    \EntryRow{deep_mlp}{Deep MLP stacks}{\cite{tolstikhin2021mlp}}{Architecture}{Tabular/Text}{Medium--Large}{Depth increases expressivity; sensitive to initialization and normalization}
+    \EntryRow{densenet}{DenseNet}{\cite{huang2017densely}}{Architecture}{Vision}{Medium--Large}{Dense connectivity; feature reuse; memory considerations}
+    \EntryRow{efficientnet}{EfficientNet}{\cite{tan2019efficientnet}}{Architecture}{Vision}{Large}{Compound scaling of depth, width, and resolution; strong accuracy--efficiency trade-off}
+    \EntryRow{highway}{Highway networks}{\cite{srivastava2015highway}}{Architecture}{General}{Medium--Large}{Gated information paths facilitating optimization of deep networks}
+    \EntryRow{resnet}{Residual neural network (ResNet)}{\cite{he2016deep}}{Architecture}{Vision}{Large}{Residual blocks; reliable backbone for many tasks}
+
+    \TypeRow{Convolutional neural networks (CNNs)}
+    \EntryRow{alexnet}{AlexNet}{\cite{krizhevsky2012imagenet}}{Architecture}{Vision}{Medium}{Breakthrough large-scale CNN; historical reference}
+    \EntryRow{fcn}{Fully convolutional networks (FCNs)}{\cite{long2015fully}}{Architecture}{Vision}{Medium}{Dense prediction; semantic segmentation groundwork}
+    \EntryRow{inception}{Inception / GoogLeNet}{\cite{szegedy2015going}}{Architecture}{Vision}{Large}{Multi-branch modules; efficient receptive fields}
+    \EntryRow{lenet}{LeNet-style CNN}{\cite{lecun1998gradient}}{Architecture}{Vision}{Small}{Early CNN; pedagogy and simple baselines}
+    \EntryRow{mobilenet}{MobileNet}{\cite{howard2017mobilenets}}{Architecture}{Vision}{Small--Medium}{Depthwise separable convolutions; mobile and edge deployment}
+    \EntryRow{senet}{Squeeze-and-excitation networks}{\cite{hu2018squeeze}}{Architecture}{Vision}{Large}{Channel-wise feature recalibration for convolutional backbones}
+    \EntryRow{unet}{U-Net}{\cite{ronneberger2015u}}{Architecture}{Vision/MedImg}{Medium}{Encoder--decoder with skip connections; segmentation staple}
+    \EntryRow{vgg}{VGG}{\cite{simonyan2015very}}{Architecture}{Vision}{Large}{Deep uniform convolutional stacks; high computational and memory demands}
+    \EntryRow{xception}{Xception}{\cite{chollet2017xception}}{Architecture}{Vision}{Large}{Depthwise separable convolutions with residual connections}
+
+    \TypeRow{Sequence models and attention (deep era)}
+    \EntryRow{bert}{BERT-style encoders}{\cite{devlin2019bert}}{Architecture}{Text}{Large}{Masked-language pretraining; natural-language understanding and embeddings}
+    \EntryRow{gpt}{GPT-style decoders}{\cite{radford2018improving}}{Architecture}{Text}{Large}{Autoregressive generation; prompting and instruction tuning}
+    \EntryRow{swin}{Swin Transformer}{\cite{liu2021swin}}{Architecture}{Vision}{Large}{Hierarchical shifted-window attention for visual recognition}
+    \EntryRow{t5}{T5}{\cite{raffel2020exploring}}{Architecture}{Text}{Large}{Unified text-to-text transformer for transfer learning}
+    \EntryRow{transformer}{Transformer}{\cite{vaswani2017attention}}{Architecture}{Text/Vision}{Large}{Self-attention; foundation model backbone}
+    \EntryRow{vit}{Vision Transformer (ViT)}{\cite{dosovitskiy2021image}}{Architecture}{Vision}{Large}{Patch embeddings and attention; benefits from large-scale pretraining}
+    \EntryRow{multimodal_transformers}{Vision--language transformers}{\cite{vaswani2017attention}}{Architecture}{V+L}{Large}{Image-text alignment; retrieval and captioning}
+
+    \TypeRow{Generative deep models}
+    \EntryRow{autoregressive}{Autoregressive generative models}{\cite{van2016pixel}}{Generative}{Text/Vision}{Large}{Token/patch generation; likelihood-based training}
+    \EntryRow{ddpm}{Denoising diffusion probabilistic models}{\cite{ho2020denoising}}{Generative}{Vision/Audio}{Large}{Iterative denoising formulation for diffusion generation}
+    \EntryRow{diffusion}{Diffusion models}{\cite{sohl2015deep}}{Generative}{Vision/Audio}{Large}{Score-based/denoising diffusion; strong fidelity and diversity}
+    \EntryRow{gan}{Generative adversarial networks (GANs)}{\cite{goodfellow2014generative}}{Generative}{General}{Medium--Large}{Adversarial training; sharp images; training instability}
+    \EntryRow{flow_models}{Normalizing flows}{\cite{rezende2015variational}}{Generative}{General}{Medium}{Exact likelihood; invertible transformations; memory/compute trade-offs}
+    \EntryRow{stylegan}{StyleGAN family}{\cite{karras2019style}}{Generative}{Vision}{Large}{High-fidelity face/image synthesis; controllable styles}
+    \EntryRow{wgan}{Wasserstein GAN}{\cite{arjovsky2017wasserstein}}{Generative}{General}{Medium--Large}{Wasserstein objective for improved adversarial training}
+
+    \TypeRow{Self-supervised and representation learning}
+    \EntryRow{byol}{Bootstrap Your Own Latent (BYOL)}{\cite{grill2020bootstrap}}{Self-supervised}{Vision}{Large}{Non-contrastive self-supervised representation learning}
+    \EntryRow{contrastive}{Contrastive learning (SimCLR/MoCo)}{\cite{chen2020simple, he2020momentum}}{Self-supervised}{Vision}{Large}{Augmentation-driven invariances; strong pretraining}
+    \EntryRow{dino}{DINO}{\cite{caron2021emerging}}{Self-supervised}{Vision}{Large}{Self-distillation yielding transferable transformer representations}
+    \EntryRow{distillation}{Knowledge distillation}{\cite{hinton2015distilling}}{Training}{General}{Medium--Large}{Teacher--student compression; accuracy--latency trade-offs}
+    \EntryRow{masked_modeling}{Masked modeling (MAE/MLM)}{\cite{devlin2019bert, he2022masked}}{Self-supervised}{Text/Vision}{Large}{Reconstruction of masked tokens/patches}
+
+    \TypeRow{Scaling, efficiency, and compression}
+    \EntryRow{data_parallel}{Data parallelism}{\cite{dean2012large}}{Systems}{General}{Large}{Scale batch size across devices; communication overhead}
+    \EntryRow{deep_compression}{Deep Compression}{\cite{han2016deep}}{Compression}{General}{Medium--Large}{Pruning, quantization, and coding for compact networks}
+    \EntryRow{low_rank}{Low-rank adaptation / factorization}{\cite{hu2022lora}}{Compression}{General}{Medium--Large}{LoRA-style adapters; parameter-efficient fine-tuning}
+    \EntryRow{mixed_precision}{Mixed precision training}{\cite{micikevicius2018mixed}}{Systems}{General}{Large}{FP16/BF16 formats; higher throughput with numerical-stability considerations}
+    \EntryRow{model_parallel}{Model/tensor parallelism}{\cite{shoeybi2019megatron}}{Systems}{General}{Large}{Splits models across devices; necessary for very large models}
+    \EntryRow{pipeline_parallel}{Pipeline parallelism}{\cite{huang2019gpipe}}{Systems}{General}{Large}{Stage-wise partitioning; pipeline-bubble and latency considerations}
+    \EntryRow{pruning}{Pruning}{\cite{lecun1989optimal}}{Compression}{General}{Medium--Large}{Unstructured/structured pruning; latency gains vary}
+    \EntryRow{quantization}{Quantization}{\cite{courbariaux2015binaryconnect}}{Compression}{General}{Small--Large}{INT8/INT4 formats; efficient deployment; calibration required}
+    \EntryRow{qat}{Quantization-aware training}{\cite{jacob2018quantization}}{Compression}{General}{Small--Large}{Integer-oriented training for efficient inference}
+
+    \TypeRow{Training paradigms and transfer}
+    \EntryRow{transfer_learning}{Deep transfer learning}{\cite{yosinski2014transferable}}{Training}{General}{Medium--Large}{Reuse and adaptation of learned representations across tasks}
+    \EntryRow{domain_adaptation}{Domain adaptation}{\cite{glorot2011domain}}{Training}{General}{Medium}{Distribution-shift mitigation; covariate- and label-shift strategies}
+    \EntryRow{federated}{Federated learning}{\cite{konecny2016federated}}{Training}{Distributed}{Medium--Large}{Privacy-aware training across sites; non-IID data challenges}
+    \EntryRow{meta_learning}{Model-agnostic meta-learning (MAML)}{\cite{finn2017model}}{Training}{General}{Medium}{Optimization for rapid adaptation to new tasks}
+    \EntryRow{multitask}{Multi-task learning}{\cite{caruana1997multitask}}{Training}{General}{Medium--Large}{Shared representations across tasks; weighting challenges}
+    \EntryRow{pretraining_finetune}{Pretraining and fine-tuning}{\cite{hinton2006reducing}}{Training}{General}{Large}{Dominant paradigm for modern DNNs}
+
+    \TypeRow{Robustness, safety, and monitoring}
+    \EntryRow{adv_training}{Adversarial training}{\cite{szegedy2014intriguing}}{Robustness}{General}{Medium--Large}{Improves robustness; computationally expensive}
+    \EntryRow{deep_ensembles}{Deep ensembles}{\cite{lakshminarayanan2017simple}}{Robustness}{General}{Medium--Large}{Predictive uncertainty from independently trained ensembles}
+    \EntryRow{drift_monitoring}{Drift monitoring}{\cite{greco2025unsupervised}}{MLOps}{General}{Production}{Detects data and label drift; triggers retraining or alerts}
+    \EntryRow{ood}{Out-of-distribution detection}{\cite{hendrycks2017baseline}}{Robustness}{General}{Medium}{Shift detection; uncertainty and density proxies}
+    \EntryRow{uncertainty}{Uncertainty estimation}{\cite{gal2016dropout}}{Robustness}{General}{Medium}{Calibration, ensembles, Bayesian approximations}
+
+    \TypeRow{Interpretability (deep models)}
+    \EntryRow{gradcam}{Grad-CAM}{\cite{selvaraju2017grad}}{Interpretability}{Vision}{Medium}{Class-discriminative localization for CNNs}
+    \EntryRow{integrated_gradients}{Integrated Gradients}{\cite{sundararajan2017axiomatic}}{Interpretability}{General}{Medium}{Axiomatic attribution; works with differentiable models}
+    \EntryRow{lrp}{Layer-wise relevance propagation}{\cite{bach2015pixel}}{Interpretability}{General}{Medium}{Backward redistribution of prediction relevance through layers}
+    \EntryRow{shap}{SHAP (model-agnostic)}{\cite{lundberg2017unified}}{Interpretability}{General}{Medium}{Feature attributions; often expensive for deep models}
+    \EntryRow{smoothgrad}{SmoothGrad}{\cite{smilkov2017smoothgrad}}{Interpretability}{General}{Medium}{Noise-averaged gradients for less noisy saliency maps}
+\end{longtable}
+
+
+
+
+\clearpage
+
+
+
+
+\section{Conclusion and Outlook}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Text %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+This manuscript consolidates fundamental concepts, architectural families, and training methods for ANNs and DNNs within a structured overview. The ANN section emphasizes foundational components---including activation functions, loss functions, regularization, and initialization---together with classical architectures that remain important as methodological baselines and conceptual building blocks. The DNN section addresses contemporary architectural families, including CNNs, residual networks, and transformers, alongside generative modeling, self-supervised pretraining, and the systems techniques required to train and deploy large-scale models. Across both domains, stable optimization depends critically on appropriate learning-rate control and normalization; reliable generalization requires capacity control, rigorous validation, and calibration; and practical deployment demands explicit consideration of computational efficiency, robustness, and continuous monitoring.
+
+Several developments are likely to shape the next generation of neural-network research and practice. First, evaluation is expected to become increasingly multidimensional, extending beyond predictive accuracy to encompass robustness under distribution shift, calibration, fairness, computational efficiency, and environmental cost. Second, pretraining-centered workflows will continue to dissolve conventional boundaries between modalities, increasing the importance of multimodal architectures, rigorous data governance, and contamination-aware benchmarking. Third, efficient adaptation and model compression are likely to become routine as increasingly capable models move into resource-constrained deployment, sustaining demand for advances in quantization, pruning, and parameter-efficient fine-tuning. Finally, trustworthy deployment will depend on closer integration of interpretability, uncertainty estimation, and drift monitoring within mature machine learning operations (MLOps) pipelines.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Text %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\clearpage
+
+
+
+
+\bibliographystyle{IEEEtran}
+\bibliography{library}
+
+
+
+
+\end{document}
+
